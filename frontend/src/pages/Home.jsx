@@ -862,8 +862,33 @@ export default function Home() {
 
         </div>
 
-      </section>
+      {/* =========================================================
+          MOBILE BOTTOM NAVIGATION BAR (FOR EASY PHONE ACCESS)
+      ========================================================= */}
+      <nav className="cp-mobile-bottom-nav md:hidden">
+        <Link to="/" className="cp-mobile-nav-item active">
+          <MapPin size={20} />
+          <span>Home</span>
+        </Link>
+        <ProtectedButton destination="/map" className="cp-mobile-nav-item">
+          <Map size={20} />
+          <span>City Map</span>
+        </ProtectedButton>
+        <ProtectedButton destination="/clusters" className="cp-mobile-nav-item">
+          <BarChart3 size={20} />
+          <span>Analytics</span>
+        </ProtectedButton>
+        <ProtectedButton destination="/dashboard" className="cp-mobile-nav-item">
+          <Grid2x2 size={20} />
+          <span>Dashboard</span>
+        </ProtectedButton>
+        <ProtectedButton destination="/notifications" className="cp-mobile-nav-item">
+          <Bell size={20} />
+          <span>Alerts</span>
+        </ProtectedButton>
+      </nav>
 
     </div>
   );
 }
+

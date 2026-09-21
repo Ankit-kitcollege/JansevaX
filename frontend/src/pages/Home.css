@@ -956,6 +956,53 @@ button.cp-btn-primary:hover,
   transform: translateY(-1px);
 }
 
+/* =========================================================
+   MOBILE BOTTOM NAVIGATION BAR
+========================================================= */
+
+.cp-mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.cp-mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.cp-mobile-nav-item.active,
+.cp-mobile-nav-item:hover {
+  color: #159b68;
+}
+
+.cp-mobile-nav-item svg {
+  stroke: currentColor;
+}
+
 /* RESPONSIVE */
 
 @media (max-width: 1200px) {
@@ -973,11 +1020,161 @@ button.cp-btn-primary:hover,
   }
   .cp-hero-inner {
     grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px 16px;
   }
   .cp-middle-container {
     grid-template-columns: 1fr;
+    padding: 12px 16px 20px;
   }
   .cp-categories-row {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .cp-categories-section {
+    padding: 20px 16px 12px;
+  }
+  .cp-banner-container {
+    padding: 8px 16px 80px;
   }
 }
+
+@media (max-width: 640px) {
+  .civic-home {
+    padding-bottom: 70px;
+  }
+
+  .cp-navbar {
+    height: 60px;
+  }
+
+  .cp-nav-inner {
+    padding: 0 16px;
+  }
+
+  .cp-logo-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .cp-logo-name {
+    font-size: 17px;
+  }
+
+  .cp-logo-tagline {
+    display: none;
+  }
+
+  .cp-user-info {
+    display: none;
+  }
+
+  .cp-hero-title {
+    font-size: 28px;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+  }
+
+  .cp-hero-desc {
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+
+  .cp-hero-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  button.cp-btn-primary,
+  .cp-btn-primary,
+  .cp-btn-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 18px !important;
+    font-size: 14px !important;
+  }
+
+  .cp-overview-card {
+    padding: 14px;
+  }
+
+  .cp-overview-title {
+    font-size: 14px;
+  }
+
+  .cp-overview-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .cp-stat-box {
+    padding: 10px;
+    gap: 4px;
+  }
+
+  .cp-stat-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+
+  .cp-stat-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .cp-stat-number {
+    font-size: 18px;
+  }
+
+  .cp-stat-label {
+    font-size: 10px;
+  }
+
+  .cp-stat-trend {
+    font-size: 9px;
+  }
+
+  .cp-categories-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .cp-category-pill {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .cp-category-icon-wrapper {
+    width: 30px;
+    height: 30px;
+  }
+
+  .cp-category-name {
+    font-size: 11px;
+  }
+
+  .cp-map-box {
+    height: 250px;
+  }
+
+  .cp-map-legend {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    justify-content: flex-start;
+  }
+
+  .cp-banner-content {
+    padding: 20px 18px;
+  }
+
+  .cp-banner-title {
+    font-size: 20px;
+  }
+
+  .cp-banner-desc {
+    font-size: 12px;
+  }
+}
+

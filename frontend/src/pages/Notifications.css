@@ -609,7 +609,7 @@ body {
 
 @media (max-width: 1000px) {
   .notifications-page .card-right {
-    min-width: 220px;
+    min-width: 200px;
   }
 
   .notifications-page .notification-card {
@@ -619,12 +619,24 @@ body {
   .notifications-page .card-right {
     flex-direction: column;
     align-items: flex-end;
+    gap: 12px;
   }
 }
 
-@media (max-width: 750px) {
+@media (max-width: 768px) {
   .notifications-page .top-header {
-    padding: 0 18px;
+    padding: 0 16px;
+    height: 64px;
+  }
+
+  .notifications-page .brand {
+    font-size: 18px;
+    gap: 8px;
+  }
+
+  .notifications-page .brand-icon {
+    width: 32px;
+    height: 32px;
   }
 
   .notifications-page .user span:not(.down) {
@@ -632,41 +644,143 @@ body {
   }
 
   .notifications-page .main-content {
-    padding: 28px 18px;
+    padding: 20px 14px 40px;
+  }
+
+  .notifications-page .page-heading {
+    padding: 18px 18px;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .notifications-page .heading-icon {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .notifications-page .title-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .notifications-page .title-row h1 {
+    font-size: 20px;
+  }
+
+  .notifications-page .page-heading p {
+    font-size: 13px;
   }
 
   .notifications-page .filter-section {
     flex-direction: column;
     align-items: stretch;
-    gap: 15px;
+    gap: 12px;
+    margin-bottom: 18px;
   }
 
   .notifications-page .tabs {
     overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+
+  .notifications-page .tab {
+    flex-shrink: 0;
+    height: 38px;
+    padding: 0 14px;
+    font-size: 13px;
   }
 
   .notifications-page .tools {
     width: 100%;
+    flex-direction: row;
+    gap: 8px;
   }
 
   .notifications-page .search-box {
     flex: 1;
+    width: auto;
+    height: 40px;
+  }
+
+  .notifications-page .filter-button {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .notifications-page .notification-card {
     flex-direction: column;
     align-items: stretch;
+    padding: 16px;
+    gap: 12px;
   }
 
   .notifications-page .notification-icon {
-    width: 54px;
-    min-width: 54px;
-    height: 54px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .notifications-page .notification-content h2 {
+    font-size: 16px;
+  }
+
+  .notifications-page .notification-content p {
+    font-size: 13px;
+    margin: 4px 0 8px;
+  }
+
+  .notifications-page .notification-meta {
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 11px;
   }
 
   .notifications-page .card-right {
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     width: 100%;
+    min-width: 0;
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .notifications-page .view-report {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+
+  .notifications-page .pagination {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
   }
 }
+
+@media (max-width: 480px) {
+  .notifications-page .title-row h1 {
+    font-size: 18px;
+  }
+
+  .notifications-page .page-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notifications-page .filter-button {
+    font-size: 11px;
+    padding: 0 10px;
+  }
+}
+
+
+
