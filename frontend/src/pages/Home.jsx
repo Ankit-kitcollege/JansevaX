@@ -862,9 +862,12 @@ export default function Home() {
 
         </div>
 
+      </section>
+
       {/* =========================================================
           MOBILE BOTTOM NAVIGATION BAR (FOR EASY PHONE ACCESS)
       ========================================================= */}
+
       <nav className="cp-mobile-bottom-nav md:hidden">
         <Link to="/" className="cp-mobile-nav-item active">
           <MapPin size={20} />
