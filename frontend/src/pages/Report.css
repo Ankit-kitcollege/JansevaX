@@ -1,0 +1,463 @@
+/* =========================================
+   CIVICPULSE REPORT PAGE STYLES
+   ========================================= */
+
+.report-page {
+  min-height: 100vh;
+  padding: 28px 5%;
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7fc 100%);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #172b4d;
+}
+
+/* =========================================
+   HEADER
+   ========================================= */
+
+.report-header {
+  width: 100%;
+  max-width: 1110px;
+  margin: 0 auto 24px auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.brand h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #2167df;
+}
+
+.brand span {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: #718096;
+}
+
+.auto-location-btn {
+  border: 1px solid #d9e2ef;
+  background: #ffffff;
+  color: #2167df;
+  padding: 12px 20px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 7px rgba(31, 66, 135, 0.07);
+  transition: 0.2s;
+}
+
+.auto-location-btn:hover {
+  background: #f3f8ff;
+  border-color: #bcd2f5;
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   HEADING
+   ========================================= */
+
+.page-heading {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.page-heading h1 {
+  margin: 0 0 8px;
+  font-size: 34px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #172b4d;
+}
+
+.page-heading p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* =========================================
+   FORM CARD
+   ========================================= */
+
+.form-container {
+  max-width: 1110px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  background: #ffffff;
+  border: 1px solid #e6edf5;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(40, 73, 120, 0.08);
+}
+
+/* =========================================
+   FORM GROUP
+   ========================================= */
+
+.form-group {
+  margin-bottom: 27px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #172b4d;
+}
+
+.form-group label span {
+  color: #e53935;
+}
+
+/* =========================================
+   INPUTS
+   ========================================= */
+
+.input-wrapper,
+.text-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border: 1px solid #d8e2ef;
+  border-radius: 8px;
+  background: #ffffff;
+  transition: 0.2s;
+}
+
+.input-wrapper:focus-within,
+.text-input-wrapper:focus-within {
+  border-color: #4285f4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.input-wrapper select {
+  width: 100%;
+  height: 42px;
+  padding: 0 45px 0 40px;
+  border: none;
+  outline: none;
+  appearance: none;
+  background: transparent;
+  color: #26364d;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  z-index: 2;
+  font-size: 16px;
+}
+
+.danger {
+  color: #e53935;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 15px;
+  color: #64748b;
+  pointer-events: none;
+  font-size: 18px;
+}
+
+/* =========================================
+   TEXTAREA
+   ========================================= */
+
+textarea {
+  width: 100%;
+  min-height: 105px;
+  resize: vertical;
+  padding: 15px;
+  border: 1px solid #d8e2ef;
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #26364d;
+  background: #ffffff;
+  transition: 0.2s;
+}
+
+textarea:focus {
+  border-color: #4285f4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: #94a3b8;
+}
+
+/* =========================================
+   DESCRIPTION FOOTER
+   ========================================= */
+
+.description-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  font-size: 11px;
+  color: #8998aa;
+}
+
+/* =========================================
+   UPLOAD
+   ========================================= */
+
+.upload-box {
+  min-height: 120px;
+  border: 2px dashed #d5dfeb;
+  border-radius: 8px;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #fbfdff;
+  transition: 0.2s;
+  margin: 0 !important;
+}
+
+.upload-box:hover {
+  border-color: #4285f4;
+  background: #f7faff;
+}
+
+.upload-box input {
+  display: none;
+}
+
+.upload-icon {
+  font-size: 30px;
+  margin-bottom: 6px;
+  color: #4285f4;
+}
+
+.upload-box strong {
+  font-size: 14px;
+  color: #52647b;
+}
+
+.upload-box small {
+  margin-top: 5px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* =========================================
+   NORMAL INPUT
+   ========================================= */
+
+.text-input-wrapper {
+  min-height: 42px;
+}
+
+.text-input-wrapper > span {
+  margin-left: 13px;
+  color: #4285f4;
+  font-size: 15px;
+}
+
+.text-input-wrapper input {
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  color: #26364d;
+}
+
+.helper-text {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #8998aa;
+}
+
+/* =========================================
+   LOCATION
+   ========================================= */
+
+.location-box {
+  min-height: 88px;
+  border: 1px solid #d8e2ef;
+  border-radius: 8px;
+  background: #fbfdff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.current-location-btn {
+  border: 1px solid #d6e1ef;
+  background: white;
+  padding: 10px 17px;
+  border-radius: 8px;
+  color: #2870e8;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(40, 80, 130, 0.06);
+  transition: 0.2s;
+}
+
+.current-location-btn:hover {
+  background: #f2f7ff;
+  border-color: #a9c7f4;
+}
+
+.location-box p {
+  margin: 7px 0 0;
+  font-size: 11px;
+  color: #8998aa;
+}
+
+.coordinates {
+  color: #2870e8 !important;
+  font-weight: 600;
+}
+
+/* =========================================
+   TWO COLUMN
+   ========================================= */
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* =========================================
+   SUBMIT
+   ========================================= */
+
+.submit-area {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.submit-btn {
+  border: none;
+  background: linear-gradient(135deg, #2874e8, #1457d9);
+  color: #ffffff;
+  padding: 12px 28px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 5px 12px rgba(36, 105, 220, 0.22);
+  transition: 0.2s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 17px rgba(36, 105, 220, 0.28);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 900px) {
+  .report-page {
+    padding: 20px 3%;
+  }
+
+  .form-container {
+    padding: 24px;
+  }
+
+  .page-heading h1 {
+    font-size: 29px;
+  }
+}
+
+@media (max-width: 700px) {
+  .report-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .auto-location-btn {
+    width: 100%;
+  }
+
+  .page-heading {
+    text-align: left;
+  }
+
+  .page-heading h1 {
+    font-size: 27px;
+  }
+
+  .two-column {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-container {
+    padding: 20px 16px;
+  }
+
+  .description-footer {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 450px) {
+  .report-page {
+    padding: 15px;
+  }
+
+  .page-heading h1 {
+    font-size: 24px;
+  }
+
+  .page-heading p {
+    line-height: 1.5;
+  }
+
+  .form-container {
+    border-radius: 10px;
+    padding: 18px 14px;
+  }
+}

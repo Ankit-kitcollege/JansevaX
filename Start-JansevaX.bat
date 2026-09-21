@@ -1,0 +1,9 @@
+@echo off
+title JansevaX Launcher
+echo Starting JansevaX Backend and Frontend...
+start "JansevaX Backend" /d "C:\Users\Ankit Yadav\.gemini\antigravity\scratch\civicpulse\backend" cmd /c ".\mvnw.cmd spring-boot:run"
+start "JansevaX Frontend" /d "C:\Users\Ankit Yadav\.gemini\antigravity\scratch\civicpulse\frontend" cmd /c "npm run dev"
+echo Waiting for servers to initialize...
+timeout /t 5 >nul
+start http://localhost:3000/
+echo Done! Opening JansevaX in browser...
