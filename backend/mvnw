@@ -1,0 +1,32 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Maven Start Up Batch script
+# ----------------------------------------------------------------------------
+
+export MAVEN_PROJECTBASEDIR="${MAVEN_BASEDIR:-$PWD}"
+
+MVNW_USERNAME=""
+MVNW_PASSWORD=""
+MVNW_VERBOSE=""
+
+for arg in "$@"
+do
+    case "$arg" in
+      -Dmvnw.username=*)
+        MVNW_USERNAME="${arg#*=}"
+        ;;
+      -Dmvnw.password=*)
+        MVNW_PASSWORD="${arg#*=}"
+        ;;
+      -Dmvnw.verbose=*)
+        MVNW_VERBOSE="${arg#*=}"
+        ;;
+    esac
+done
+
+if command -v mvn >/dev/null 2>&1; then
+    exec mvn "$@"
+else
+    echo "Maven Wrapper: System mvn binary not found, invoking mvn..."
+    exec mvn "$@"
+fi
