@@ -289,14 +289,14 @@ export default function DepartmentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDepartmentTasks();
-    const handleSync = () => fetchDepartmentTasks();
+    fetchDepartmentTasks(true);
+    const handleSync = () => fetchDepartmentTasks(false);
     window.addEventListener("civicpulse-report-submitted", handleSync);
     window.addEventListener("civicpulse-report-removed", handleSync);
     window.addEventListener("storage", handleSync);
     window.addEventListener("focus", handleSync);
 
-    const intervalId = setInterval(fetchDepartmentTasks, 5000);
+    const intervalId = setInterval(() => fetchDepartmentTasks(false), 5000);
 
     return () => {
       window.removeEventListener("civicpulse-report-submitted", handleSync);
@@ -350,8 +350,10 @@ export default function DepartmentDashboard() {
     }
   };
 
-  const fetchDepartmentTasks = async () => {
-    setLoading(true);
+  const fetchDepartmentTasks = async (showLoadingSpinner = false) => {
+    if (showLoadingSpinner) {
+      setLoading(true);
+    }
     try {
       const unified = await fetchUnifiedReports();
       setBackendReports(unified);
@@ -371,7 +373,9 @@ export default function DepartmentDashboard() {
     } catch (err) {
       console.error("Failed to process department tasks", err);
     } finally {
-      setLoading(false);
+      if (showLoadingSpinner) {
+        setLoading(false);
+      }
     }
   };
 
@@ -1066,7 +1070,7 @@ export default function DepartmentDashboard() {
                     onClick={() => {
                       setSearch("");
                       setPriorityFilter("ALL");
-                      fetchDepartmentTasks();
+                      fetchDepartmentTasks(true);
                     }}
                   >
                     <RefreshCw size={18} />

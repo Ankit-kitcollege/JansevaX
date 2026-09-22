@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { fetchUnifiedReports } from "../utils/reportStorage";
+import { useAuth } from "../context/AuthContext";
 import "./ReportDetail.css";
 
 const fallbackReport = {
@@ -101,12 +102,50 @@ function getHistoryIcon(status) {
 
 export default function ReportDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [report, setReport] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [supporting, setSupporting] = useState(false);
   const [apiError, setApiError] = useState(false);
+
+  // Dynamic user role & dashboard link
+  const currentUser = user || (() => {
+    try {
+      return JSON.parse(localStorage.getItem("civic_user") || localStorage.getItem("civicpulseUser") || "{}");
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const userRole = currentUser?.role || "CITIZEN";
+  const dashboardPath =
+    userRole === "ADMIN"
+      ? "/admin"
+      : userRole === "DEPARTMENT_OFFICER"
+      ? "/department"
+      : "/dashboard";
+
+  const userDisplayName =
+    currentUser?.name ||
+    (userRole === "DEPARTMENT_OFFICER"
+      ? "Dept. Officer"
+      : userRole === "ADMIN"
+      ? "Admin User"
+      : "Citizen User");
+
+  const userRoleLabel =
+    userRole === "DEPARTMENT_OFFICER"
+      ? "Field Officer"
+      : userRole === "ADMIN"
+      ? "System Administrator"
+      : "Verified Citizen";
+
+  const userAvatarInitial = userDisplayName
+    ? userDisplayName[0].toUpperCase()
+    : "U";
 
   useEffect(() => {
     loadReport();
@@ -278,7 +317,7 @@ export default function ReportDetail() {
       <header className="civic-header">
         <div className="header-inner">
 
-          <Link to="/dashboard" className="brand">
+          <Link to={dashboardPath} className="brand">
             <div className="brand-logo">⌁</div>
 
             <div>
@@ -290,21 +329,21 @@ export default function ReportDetail() {
           </Link>
 
           <div className="header-right">
-            <Link to="/citizen-dashboard" className="dashboard-link">
+            <Link to={dashboardPath} className="dashboard-link">
               Dashboard
             </Link>
 
-            <div className="notification-icon">
+            <div className="notification-icon" onClick={() => navigate("/notifications")} style={{ cursor: "pointer" }}>
               ♧
               <span />
             </div>
 
-            <div className="profile-mini">
-              <div className="profile-avatar">A</div>
+            <div className="profile-mini" onClick={() => navigate("/profile")} style={{ cursor: "pointer" }}>
+              <div className="profile-avatar">{userAvatarInitial}</div>
 
               <div>
-                <strong>Citizen User</strong>
-                <small>Verified Citizen</small>
+                <strong>{userDisplayName}</strong>
+                <small>{userRoleLabel}</small>
               </div>
             </div>
           </div>
@@ -317,7 +356,7 @@ export default function ReportDetail() {
       <main className="report-container">
 
         <Link
-          to="/citizen-dashboard"
+          to={dashboardPath}
           className="back-dashboard"
         >
           ← Back to Dashboard
