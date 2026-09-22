@@ -110,6 +110,7 @@ export default function ReportDetail() {
   const [loading, setLoading] = useState(true);
   const [supporting, setSupporting] = useState(false);
   const [apiError, setApiError] = useState(false);
+  const [showDeptModal, setShowDeptModal] = useState(false);
 
   // Dynamic user role & dashboard link
   const currentUser = user || (() => {
@@ -158,21 +159,63 @@ export default function ReportDetail() {
     return match ? parseInt(match[0], 10) : val;
   }
 
+  const getDepartmentName = (r) => {
+    if (!r) return fallbackReport.department;
+    if (typeof r.departmentName === "string" && r.departmentName.trim()) return r.departmentName;
+    if (typeof r.department === "string" && r.department.trim()) return r.department;
+    if (r.department && typeof r.department === "object" && typeof r.department.name === "string" && r.department.name.trim()) return r.department.name;
+    
+    // Category fallback
+    const cat = String(r.category || "").toUpperCase();
+    if (cat.includes("POTHOLE") || cat.includes("ROAD")) return "Roads & Bridges Department";
+    if (cat.includes("GARBAGE") || cat.includes("SANITATION")) return "Solid Waste & Sanitation Department";
+    if (cat.includes("WATER") || cat.includes("DRAIN")) return "Water Supply & Sewage Board";
+    if (cat.includes("LIGHT") || cat.includes("ELECTRIC") || cat.includes("STREETLIGHT")) return "Electrical Infrastructure Cell";
+    if (cat.includes("TREE") || cat.includes("PARK")) return "Horticulture & Greenery Department";
+
+    return fallbackReport.department || "Municipal Field Operations";
+  };
+
+  const getReporterName = (r) => {
+    if (!r) return fallbackReport.reportedBy;
+    if (typeof r.reporterName === "string" && r.reporterName.trim()) return r.reporterName;
+    if (typeof r.reportedBy === "string" && r.reportedBy.trim()) return r.reportedBy;
+    if (r.reportedBy && typeof r.reportedBy === "object" && typeof r.reportedBy.name === "string" && r.reportedBy.name.trim()) return r.reportedBy.name;
+    return "Verified Citizen";
+  };
+
+  const getFormattedReportId = (r) => {
+    if (!r || !r.id) return id || fallbackReport.reportId;
+    const strId = String(r.id);
+    if (strId.startsWith("RD-") || strId.startsWith("LOCAL-") || strId.startsWith("MAP-")) {
+      return strId;
+    }
+    const num = parseInt(strId.replace(/\D/g, ""), 10);
+    if (!isNaN(num)) {
+      return `RD-2026-05-${String(num).padStart(3, "0")}`;
+    }
+    return strId;
+  };
+
   const mapToPageReport = (r) => {
     if (!r) return fallbackReport;
+    const dept = getDepartmentName(r);
+    const reporter = getReporterName(r);
+    const formattedId = getFormattedReportId(r);
+
     return {
-      reportId: r.id ? `RD-2026-05-${String(r.id).padStart(3, "0")}` : (id || fallbackReport.reportId),
+      reportId: formattedId,
       id: r.id,
       title: r.title || fallbackReport.title,
       location: r.address || r.location || fallbackReport.location,
       locationDetail: r.landmark || fallbackReport.locationDetail,
       status: r.status || fallbackReport.status,
-      priorityScore: r.priorityScore || fallbackReport.priorityScore,
-      priorityLabel: (r.priorityScore || 85) >= 70 ? "HIGH" : (r.priorityScore || 85) >= 40 ? "MEDIUM" : "LOW",
+      priorityScore: r.priorityScore || fallbackReport.priorityScore || 50,
+      priorityLabel: (r.priorityScore || 50) >= 70 ? "HIGH" : (r.priorityScore || 50) >= 40 ? "MEDIUM" : "LOW",
       description: r.description || fallbackReport.description,
-      reportedBy: r.reporterName || r.reportedBy?.name || fallbackReport.reportedBy,
-      department: r.departmentName || r.department?.name || fallbackReport.department,
-      officer: "Municipal Field Officer",
+      reportedBy: reporter,
+      department: dept,
+      officer: r.officerName || r.assignedOfficer || "Municipal Field Officer",
       supportCount: r.supportCount ?? r.upvoteCount ?? fallbackReport.supportCount,
       imageUrl: r.imageUrl || "",
       createdAt: r.createdAt || fallbackReport.createdAt,
@@ -905,9 +948,28 @@ export default function ReportDetail() {
 
                 </div>
 
-                <Link to="/citizen-dashboard" className="department-button" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDeptModal(true)}
+                  className="department-button"
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    background: "#4f46e5",
+                    color: "#ffffff",
+                    padding: "12px 16px",
+                    borderRadius: "10px",
+                    fontWeight: "700",
+                    fontSize: "13px",
+                    border: "none",
+                    marginTop: "14px",
+                    transition: "all 0.2s ease"
+                  }}
+                >
                   View Department Details →
-                </Link>
+                </button>
 
               </div>
 
@@ -917,6 +979,50 @@ export default function ReportDetail() {
 
         </div>
       </main>
+
+      {/* Department Info Modal */}
+      {showDeptModal && (
+        <div className="modal-backdrop" onClick={() => setShowDeptModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999, padding: "20px" }}>
+          <div className="card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "550px", width: "100%", background: "#ffffff", borderRadius: "20px", padding: "28px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "16px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: "800", color: "#6366f1", letterSpacing: "1px", textTransform: "uppercase" }}>JANSEVAX MUNICIPAL INFRASTRUCTURE</span>
+                <h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", margin: "4px 0 0" }}>{report?.department || "Roads & Bridges Department"}</h2>
+              </div>
+              <button onClick={() => setShowDeptModal(false)} style={{ background: "#f1f5f9", border: "none", width: "32px", height: "32px", borderRadius: "50%", cursor: "pointer", fontWeight: "bold", fontSize: "16px", color: "#64748b" }}>✕</button>
+            </div>
+
+            <div style={{ display: "grid", gap: "16px", fontSize: "13px", color: "#334155" }}>
+              <div style={{ background: "#f8fafc", padding: "14px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                <span style={{ color: "#64748b", fontSize: "11px", fontWeight: "700", display: "block" }}>ASSIGNED FIELD OFFICER</span>
+                <strong style={{ color: "#0f172a", fontSize: "15px" }}>{report?.officer || "Municipal Field Officer (ID: CP-OFF-8842)"}</strong>
+                <small style={{ display: "block", color: "#166534", marginTop: "2px", fontWeight: "600" }}>● On-Duty • Field Operations Unit</small>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+                  <span style={{ color: "#64748b", fontSize: "11px", fontWeight: "700", display: "block" }}>ESTIMATED RESOLUTION SLA</span>
+                  <strong style={{ color: "#4f46e5" }}>24 - 48 Hours</strong>
+                </div>
+                <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+                  <span style={{ color: "#64748b", fontSize: "11px", fontWeight: "700", display: "block" }}>OPERATING JURISDICTION</span>
+                  <strong style={{ color: "#0f172a" }}>Kanpur Central Sector</strong>
+                </div>
+              </div>
+
+              <div style={{ background: "#eef2ff", padding: "14px", borderRadius: "12px", border: "1px solid #c7d2fe", color: "#3730a3" }}>
+                <strong style={{ display: "block", fontSize: "12px" }}>DEPARTMENT HELPLINE & EMERGENCY SUPPORT</strong>
+                <span style={{ fontSize: "14px", fontWeight: "800", display: "block", marginTop: "4px" }}>📞 Toll-Free: 1800-180-2026 (JansevaX Municipal Cell)</span>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
+              <button onClick={() => { setShowDeptModal(false); navigate(dashboardPath); }} style={{ flex: 1, padding: "12px", borderRadius: "10px", background: "#4f46e5", color: "#fff", fontWeight: "700", border: "none", cursor: "pointer" }}>Go to My Dashboard</button>
+              <button onClick={() => setShowDeptModal(false)} style={{ padding: "12px 20px", borderRadius: "10px", background: "#f1f5f9", color: "#475569", fontWeight: "700", border: "1px solid #cbd5e1", cursor: "pointer" }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
