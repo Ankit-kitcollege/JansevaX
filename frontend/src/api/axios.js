@@ -5,8 +5,18 @@ const getBaseURL = () => {
   if (envUrl) {
     return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
   }
+
+  // Smart Auto-detection for cloud deployment (Render/Netlify/Vercel)
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.includes('onrender.com') || host.includes('netlify.app') || host.includes('vercel.app')) {
+      return 'https://jansevax.onrender.com/api';
+    }
+  }
+
   return '/api';
 };
+
 
 const API = axios.create({
   baseURL: getBaseURL(),
