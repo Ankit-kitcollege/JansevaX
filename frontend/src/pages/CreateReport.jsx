@@ -151,14 +151,21 @@ export default function CreateReport() {
     const formDataUpload = new FormData();
     formDataUpload.append("file", file);
     try {
-      const res = await fetch("http://localhost:8080/api/upload", {
+      const res = await fetch("/api/upload", {
         method: "POST",
         body: formDataUpload,
       });
+
       const data = await res.json();
       if (data.url) {
-        setImageUrl("http://localhost:8080" + data.url);
+        const fullUrl = data.url.startsWith("http")
+          ? data.url
+          : (import.meta.env.VITE_API_BASE_URL
+              ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') + data.url
+              : data.url);
+        setImageUrl(fullUrl);
       }
+
     } catch (uploadErr) {
       console.error("File upload failed", uploadErr);
     }

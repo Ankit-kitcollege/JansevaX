@@ -1,11 +1,20 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) {
+    return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+  }
+  return '/api';
+};
+
 const API = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json'
   }
 });
+
 
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('civic_token');

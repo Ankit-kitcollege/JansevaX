@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { reportApi } from "../api/reportApi";
 import { useAuth } from "../context/AuthContext";
-import { Bell, Grid2x2, User } from "lucide-react";
+import { fetchUnifiedReports } from "../utils/reportStorage";
 import "./Dashboard.css";
 
 const icons = {
@@ -38,37 +38,31 @@ export default function CitizenDashboard() {
 
   useEffect(() => {
     fetchDashboardReports();
+    const handleSync = () => fetchDashboardReports();
+    window.addEventListener("civicpulse-report-submitted", handleSync);
+    window.addEventListener("civicpulse-report-removed", handleSync);
+    window.addEventListener("storage", handleSync);
+    window.addEventListener("focus", handleSync);
+
+    return () => {
+      window.removeEventListener("civicpulse-report-submitted", handleSync);
+      window.removeEventListener("civicpulse-report-removed", handleSync);
+      window.removeEventListener("storage", handleSync);
+      window.removeEventListener("focus", handleSync);
+    };
   }, []);
 
   const fetchDashboardReports = async () => {
     try {
-      let apiReports = [];
-      try {
-        const res = await reportApi.getAllReports();
-        apiReports = res.data || [];
-      } catch (err) {}
-
-      const localAll = JSON.parse(localStorage.getItem("civicpulse_all_reports") || "[]");
-      const localMy = JSON.parse(localStorage.getItem("civicpulse_my_reports") || "[]");
-
-      const map = new Map();
-      apiReports.forEach((r) => {
-        if (r && r.id) map.set(String(r.id), r);
-      });
-      [...localAll, ...localMy].forEach((r) => {
-        if (r && r.id) {
-          const existing = map.get(String(r.id));
-          map.set(String(r.id), existing ? { ...existing, ...r } : r);
-        }
-      });
-
-      setReports(Array.from(map.values()));
+      const unified = await fetchUnifiedReports();
+      setReports(unified);
     } catch (err) {
       console.error("Failed to load reports", err);
     } finally {
       setLoading(false);
     }
   };
+
 
   const getTypeKey = (category) => {
     if (!category) return "pothole";
