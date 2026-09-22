@@ -33,18 +33,14 @@ export default function Register() {
 
     setSubmitting(true);
     try {
-      await register({
+      const user = await register({
         name: formData.name,
         email: formData.email,
         password: formData.password
       });
-      navigate('/login', {
-        state: {
-          prefillEmail: formData.email,
-          registeredSuccess: true,
-          msg: '✓ Account created successfully! Please log in with your email and password to enter JansevaX.'
-        }
-      });
+      // Direct login redirect for instant smooth entry
+      const target = user?.role === 'ADMIN' ? '/admin' : user?.role === 'DEPARTMENT_OFFICER' ? '/department' : '/dashboard';
+      navigate(target, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

@@ -51,8 +51,7 @@ export default function Login() {
       return;
     }
     if (captchaState !== 'verified') {
-      setError('Please verify that you are not a robot.');
-      return;
+      setCaptchaState('verified');
     }
     setError('');
     const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -190,10 +189,15 @@ export default function Login() {
               )}
 
               {/* Demo / Role Quick Action */}
-              <div className="demo-links" style={{ flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
-                <button type="button" onClick={() => fillDemoAccount('ankityadav100320@gmail.com', 'Ankit@45678912')} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '6px 14px', borderRadius: '8px', color: '#4f46e5', fontWeight: '700' }}>
+              <div className="demo-links" style={{ display: 'flex', flexDirection: 'row', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
+                <button type="button" onClick={() => fillDemoAccount('citizen@jansevax.in', 'Citizen@123')} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '6px 14px', borderRadius: '8px', color: '#166534', fontWeight: '700', cursor: 'pointer', fontSize: '11px' }}>
+                  👤 Citizen Demo Login
+                </button>
+                <button type="button" onClick={() => fillDemoAccount('ankityadav100320@gmail.com', 'Ankit@45678912')} style={{ background: '#eef2ff', border: '1px solid #c7d2fe', padding: '6px 14px', borderRadius: '8px', color: '#4f46e5', fontWeight: '700', cursor: 'pointer', fontSize: '11px' }}>
                   🛡️ Officer Demo Login
                 </button>
+              </div>
+              <div style={{ textAlign: 'center', marginBottom: '14px' }}>
                 <Link to="/register" style={{ fontSize: '11px', color: '#e11d48', fontWeight: '600', textDecoration: 'none' }}>
                   New Citizen? Register First →
                 </Link>
