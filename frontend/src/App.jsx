@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Navbar from './components/Navbar';
 import AppRoutes from './routes/AppRoutes';
+import API from './api/axios';
 
 export default function App() {
+  useEffect(() => {
+    // Non-blocking background warmup ping to wake up free Render container
+    API.get('/reports').catch(() => {});
+  }, []);
+
   return (
+
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>

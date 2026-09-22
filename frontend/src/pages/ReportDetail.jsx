@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import axios from "axios";
+import API from "../api/axios";
+import { fetchUnifiedReports } from "../utils/reportStorage";
 import "./ReportDetail.css";
-
-const API = "/api";
 
 const fallbackReport = {
   reportId: "RD-2026-05-001",
@@ -120,48 +119,45 @@ export default function ReportDetail() {
     return match ? parseInt(match[0], 10) : val;
   }
 
+  const mapToPageReport = (r) => {
+    if (!r) return fallbackReport;
+    return {
+      reportId: r.id ? `RD-2026-05-${String(r.id).padStart(3, "0")}` : (id || fallbackReport.reportId),
+      id: r.id,
+      title: r.title || fallbackReport.title,
+      location: r.address || r.location || fallbackReport.location,
+      locationDetail: r.landmark || fallbackReport.locationDetail,
+      status: r.status || fallbackReport.status,
+      priorityScore: r.priorityScore || fallbackReport.priorityScore,
+      priorityLabel: (r.priorityScore || 85) >= 70 ? "HIGH" : (r.priorityScore || 85) >= 40 ? "MEDIUM" : "LOW",
+      description: r.description || fallbackReport.description,
+      reportedBy: r.reporterName || r.reportedBy?.name || fallbackReport.reportedBy,
+      department: r.departmentName || r.department?.name || fallbackReport.department,
+      officer: "Municipal Field Officer",
+      supportCount: r.supportCount ?? r.upvoteCount ?? fallbackReport.supportCount,
+      imageUrl: r.imageUrl || "",
+      createdAt: r.createdAt || fallbackReport.createdAt,
+      updatedAt: r.updatedAt || fallbackReport.updatedAt,
+      latestMessage: r.notes || (r.history && r.history.length > 0 ? r.history[0].notes : null),
+      userSupported: r.userSupported,
+    };
+  };
+
   async function loadReport() {
+    setLoading(true);
+    setApiError(false);
+
+    let localFound = null;
+
+    // 1. Check local storage / unified reports first for instant 0ms load
     try {
-      setLoading(true);
-      setApiError(false);
-
-      const targetId = parseNumericId(id);
-      const token = localStorage.getItem("civic_token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-      const reportResponse = await axios.get(`${API}/reports/${targetId}`, { headers });
-      const r = reportResponse.data;
-
-      // Map backend model to page structure
-      const mappedReport = {
-        reportId: r.id ? `RD-2026-05-${String(r.id).padStart(3, "0")}` : (id || fallbackReport.reportId),
-        id: r.id,
-        title: r.title || fallbackReport.title,
-        location: r.address || r.location || fallbackReport.location,
-        locationDetail: r.landmark || fallbackReport.locationDetail,
-        status: r.status || fallbackReport.status,
-        priorityScore: r.priorityScore || fallbackReport.priorityScore,
-        priorityLabel: (r.priorityScore || 85) >= 70 ? "HIGH" : (r.priorityScore || 85) >= 40 ? "MEDIUM" : "LOW",
-        description: r.description || fallbackReport.description,
-        reportedBy: r.reporterName || r.reportedBy?.name || fallbackReport.reportedBy,
-        department: r.departmentName || r.department?.name || fallbackReport.department,
-        officer: "Municipal Field Officer",
-        supportCount: r.supportCount ?? r.upvoteCount ?? fallbackReport.supportCount,
-        imageUrl: r.imageUrl || "",
-        createdAt: r.createdAt || fallbackReport.createdAt,
-        updatedAt: r.updatedAt || fallbackReport.updatedAt,
-        latestMessage: r.notes || (r.history && r.history.length > 0 ? r.history[0].notes : null),
-        userSupported: r.userSupported,
-      };
-
-      setReport(mappedReport);
-
-      // Attempt loading history logs & resolution logs
-      try {
-        let mappedLogs = [];
-        const historyResponse = await axios.get(`${API}/reports/${targetId}/history`, { headers });
-        if (historyResponse.data && historyResponse.data.length > 0) {
-          mappedLogs = historyResponse.data.map((h, idx) => ({
+      const unified = await fetchUnifiedReports();
+      const match = unified.find((r) => String(r.id) === String(id) || String(parseNumericId(r.id)) === String(parseNumericId(id)));
+      if (match) {
+        localFound = mapToPageReport(match);
+        setReport(localFound);
+        if (match.history && match.history.length > 0) {
+          setHistory(match.history.map((h, idx) => ({
             id: h.id || idx + 1,
             status: h.newStatus || h.status || "IN_PROGRESS",
             title: getStatusLabel(h.newStatus || h.status),
@@ -169,48 +165,75 @@ export default function ReportDetail() {
             updatedBy: h.changedByName || h.updatedBy || "Municipal Officer",
             role: "Municipal Officer",
             createdAt: h.timestamp || h.createdAt || new Date().toISOString(),
-            imageUrl: h.proofPhoto || h.afterImageUrl || h.beforeImageUrl,
-          }));
-        }
-
-        // Fetch Resolution Logs from database
-        try {
-          const resLogRes = await axios.get(`${API}/resolution-logs/report/${targetId}`, { headers });
-          if (resLogRes.data && resLogRes.data.length > 0) {
-            const resLogsMapped = resLogRes.data.map((rl) => ({
-              id: `RL-${rl.id}`,
-              status: rl.status || "RESOLVED",
-              title: "✓ Resolution Log Submitted",
-              message: rl.actionNotes || "Resolution Log recorded by field officer.",
-              updatedBy: `Municipal Officer (Officer #${rl.officerId || "CP-OFF-8842"})`,
-              role: "Field Operations Unit",
-              createdAt: rl.createdAt,
-              imageUrl: rl.proofPhoto,
-            }));
-            mappedLogs = [...resLogsMapped, ...mappedLogs];
-          }
-        } catch (rlErr) {}
-
-        if (mappedLogs.length > 0) {
-          setHistory(mappedLogs);
+          })));
         } else {
           setHistory(fallbackHistory);
         }
-      } catch {
-        setHistory(fallbackHistory);
+      }
+    } catch (e) {}
+
+    // 2. Fetch fresh data from backend API
+    try {
+      const targetId = parseNumericId(id);
+      const reportResponse = await API.get(`/reports/${targetId}`);
+      const r = reportResponse.data;
+
+      if (r) {
+        const mapped = mapToPageReport(r);
+        setReport(mapped);
+
+        // Fetch History
+        try {
+          let mappedLogs = [];
+          const historyResponse = await API.get(`/reports/${targetId}/history`);
+          if (historyResponse.data && historyResponse.data.length > 0) {
+            mappedLogs = historyResponse.data.map((h, idx) => ({
+              id: h.id || idx + 1,
+              status: h.newStatus || h.status || "IN_PROGRESS",
+              title: getStatusLabel(h.newStatus || h.status),
+              message: h.notes || h.actionNotes || h.message || "Status updated",
+              updatedBy: h.changedByName || h.updatedBy || "Municipal Officer",
+              role: "Municipal Officer",
+              createdAt: h.timestamp || h.createdAt || new Date().toISOString(),
+              imageUrl: h.proofPhoto || h.afterImageUrl || h.beforeImageUrl,
+            }));
+          }
+
+          try {
+            const resLogRes = await API.get(`/resolution-logs/report/${targetId}`);
+            if (resLogRes.data && resLogRes.data.length > 0) {
+              const resLogsMapped = resLogRes.data.map((rl) => ({
+                id: `RL-${rl.id}`,
+                status: rl.status || "RESOLVED",
+                title: "✓ Resolution Log Submitted",
+                message: rl.actionNotes || "Resolution Log recorded by field officer.",
+                updatedBy: `Municipal Officer (Officer #${rl.officerId || "CP-OFF-8842"})`,
+                role: "Field Operations Unit",
+                createdAt: rl.createdAt,
+                imageUrl: rl.proofPhoto,
+              }));
+              mappedLogs = [...resLogsMapped, ...mappedLogs];
+            }
+          } catch (rlErr) {}
+
+          if (mappedLogs.length > 0) setHistory(mappedLogs);
+        } catch (e) {}
       }
     } catch (error) {
-      console.warn("Backend API call failed, loading fallback preview data:", error);
-      setApiError(true);
-      setReport({
-        ...fallbackReport,
-        reportId: id || fallbackReport.reportId,
-      });
-      setHistory(fallbackHistory);
+      console.warn("Backend API call failed, using local/unified report data:", error);
+      if (!localFound) {
+        setApiError(true);
+        setReport({
+          ...fallbackReport,
+          reportId: id || fallbackReport.reportId,
+        });
+        setHistory(fallbackHistory);
+      }
     } finally {
       setLoading(false);
     }
   }
+
 
   async function supportIssue() {
     try {
