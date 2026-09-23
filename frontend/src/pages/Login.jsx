@@ -135,6 +135,13 @@ export default function Login() {
     }
   };
 
+  const fillOfficerDemo = () => {
+    setEmail('ankityadav100320@gmail.com');
+    setPassword('Ankit@45678912');
+    setCaptchaState('idle');
+    setError('');
+  };
+
   const handleCaptchaClick = () => {
     if (captchaState !== 'idle') return;
     setCaptchaState('loading');
@@ -187,14 +194,11 @@ export default function Login() {
                 </div>
               )}
 
-              {/* Citizen Registration Notice Banner */}
-              <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', textAlign: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#334155', fontWeight: '600' }}>
-                  New Citizen? Citizens must register first before logging in.{" "}
-                </span>
-                <Link to="/register" style={{ color: '#e11d48', fontWeight: '800', textDecoration: 'none', fontSize: '12px' }}>
-                  Register Here →
-                </Link>
+              {/* Quick Officer Demo Button */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <button type="button" onClick={fillOfficerDemo} style={{ background: '#eef2ff', border: '1px solid #c7d2fe', padding: '8px 18px', borderRadius: '10px', color: '#4f46e5', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
+                  🛡️ Officer Demo Auto-Fill Credentials
+                </button>
               </div>
 
               {error && <div className="error-msg">{error}</div>}
