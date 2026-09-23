@@ -681,6 +681,10 @@ export default function Home() {
 
 
           <div className="cp-map-box">
+            {/* Mobile Interactive Map Touch Hint Overlay */}
+            <div className="cp-mobile-map-hint md:hidden">
+              <span>📍 Tap & Drag to Explore Map</span>
+            </div>
 
             <form className="cp-map-search-bar" onSubmit={handleSearchSubmit}>
 
@@ -869,29 +873,49 @@ export default function Home() {
       </section>
 
       {/* =========================================================
-          MOBILE BOTTOM NAVIGATION BAR (FOR EASY PHONE ACCESS)
+          MOBILE FLOATING QUICK ACTION BUTTON (FAB)
+      ========================================================= */}
+
+      <ProtectedButton destination="/report" className="cp-mobile-fab md:hidden">
+        <Plus size={20} strokeWidth={2.8} />
+        <span>Report Issue</span>
+      </ProtectedButton>
+
+      {/* =========================================================
+          GLASSMORPHISM MOBILE BOTTOM NAVIGATION BAR
       ========================================================= */}
 
       <nav className="cp-mobile-bottom-nav md:hidden">
         <Link to="/" className="cp-mobile-nav-item active">
-          <MapPin size={20} />
+          <div className="cp-mobile-icon-wrapper">
+            <MapPin size={20} />
+            <span className="cp-nav-glow-dot" />
+          </div>
           <span>Home</span>
         </Link>
         <ProtectedButton destination="/map" className="cp-mobile-nav-item">
-          <Map size={20} />
+          <div className="cp-mobile-icon-wrapper">
+            <Map size={20} />
+          </div>
           <span>City Map</span>
         </ProtectedButton>
         <ProtectedButton destination="/clusters" className="cp-mobile-nav-item">
-          <BarChart3 size={20} />
+          <div className="cp-mobile-icon-wrapper">
+            <BarChart3 size={20} />
+          </div>
           <span>Analytics</span>
         </ProtectedButton>
         <ProtectedButton destination="/dashboard" className="cp-mobile-nav-item">
-          <Grid2x2 size={20} />
+          <div className="cp-mobile-icon-wrapper">
+            <Grid2x2 size={20} />
+          </div>
           <span>Dashboard</span>
         </ProtectedButton>
         {user && (user.role === 'DEPARTMENT_OFFICER' || user.role === 'ADMIN') && (
           <ProtectedButton destination="/notifications" className="cp-mobile-nav-item">
-            <Bell size={20} />
+            <div className="cp-mobile-icon-wrapper">
+              <Bell size={20} />
+            </div>
             <span>Alerts</span>
           </ProtectedButton>
         )}
