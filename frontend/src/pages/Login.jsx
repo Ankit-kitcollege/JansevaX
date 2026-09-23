@@ -6,8 +6,8 @@ import './Auth.css';
 
 export default function Login() {
   const [step, setStep] = useState(1); // 1 = Credentials & Captcha, 2 = OTP Verification
-  const [email, setEmail] = useState('ankityadav100320@gmail.com');
-  const [password, setPassword] = useState('Ankit@45678912');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [captchaState, setCaptchaState] = useState('idle'); // 'idle', 'loading', 'verified'
   const [error, setError] = useState('');
@@ -128,7 +128,7 @@ export default function Login() {
       }
       navigate(targetRoute, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid officer credentials. Please try again.');
+      setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
       setStep(1);
     } finally {
       setSubmitting(false);
