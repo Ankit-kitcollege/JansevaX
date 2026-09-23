@@ -142,6 +142,13 @@ export default function Login() {
     setError('');
   };
 
+  const fillCitizenDemo = () => {
+    setEmail('citizen@jansevax.in');
+    setPassword('Citizen@123');
+    setCaptchaState('idle');
+    setError('');
+  };
+
   const handleCaptchaClick = () => {
     if (captchaState !== 'idle') return;
     setCaptchaState('loading');
@@ -182,9 +189,9 @@ export default function Login() {
             <>
               {/* Header Step 1 */}
               <div className="header">
-                <h1>Department Officer Login</h1>
+                <h1>Account Login</h1>
                 <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                  Secure Officer & Administrator Access Console
+                  Access Citizen Dashboard or Department Operations Console
                 </p>
               </div>
 
@@ -194,10 +201,13 @@ export default function Login() {
                 </div>
               )}
 
-              {/* Officer Quick Login Button */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-                <button type="button" onClick={fillOfficerDemo} style={{ background: '#eef2ff', border: '1px solid #c7d2fe', padding: '8px 18px', borderRadius: '10px', color: '#4f46e5', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
-                  🛡️ Officer Demo Auto-Fill Credentials
+              {/* Quick Login Buttons */}
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
+                <button type="button" onClick={fillCitizenDemo} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '8px 14px', borderRadius: '10px', color: '#166534', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
+                  👤 Citizen Demo Auto-Fill
+                </button>
+                <button type="button" onClick={fillOfficerDemo} style={{ background: '#eef2ff', border: '1px solid #c7d2fe', padding: '8px 14px', borderRadius: '10px', color: '#4f46e5', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
+                  🛡️ Officer Demo Auto-Fill
                 </button>
               </div>
 
@@ -207,7 +217,7 @@ export default function Login() {
               <form onSubmit={handleSendOtp}>
                 {/* Email Field */}
                 <div className="form-group">
-                  <label htmlFor="email">Officer Email Address</label>
+                  <label htmlFor="email">Email Address</label>
                   <div className="input-wrapper">
                     <input
                       type="email"
@@ -216,7 +226,7 @@ export default function Login() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="officer@jansevax.in"
+                      placeholder="name@example.com"
                     />
                   </div>
                 </div>
