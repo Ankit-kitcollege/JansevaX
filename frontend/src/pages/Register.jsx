@@ -33,14 +33,18 @@ export default function Register() {
 
     setSubmitting(true);
     try {
-      const user = await register({
+      await register({
         name: formData.name,
         email: formData.email,
         password: formData.password
       });
-      // Direct login redirect for instant smooth entry
-      const target = user?.role === 'ADMIN' ? '/admin' : user?.role === 'DEPARTMENT_OFFICER' ? '/department' : '/dashboard';
-      navigate(target, { replace: true });
+      navigate('/login', {
+        state: {
+          prefillEmail: formData.email,
+          registeredSuccess: true,
+          msg: '✓ Account created successfully! Please log in with your email and password.'
+        }
+      });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

@@ -97,12 +97,9 @@ export default function Login() {
             </div>
           )}
 
-          {/* Quick Demo Links */}
-          <div className="demo-links" style={{ display: 'flex', flexDirection: 'row', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-            <button type="button" onClick={() => fillDemoAccount('citizen@jansevax.in', 'Citizen@123')} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '8px 14px', borderRadius: '10px', color: '#166534', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
-              👤 Citizen Demo Login
-            </button>
-            <button type="button" onClick={() => fillDemoAccount('ankityadav100320@gmail.com', 'Ankit@45678912')} style={{ background: '#eef2ff', border: '1px solid #c7d2fe', padding: '8px 14px', borderRadius: '10px', color: '#4f46e5', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
+          {/* Quick Officer Demo Link */}
+          <div className="demo-links" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            <button type="button" onClick={() => fillDemoAccount('ankityadav100320@gmail.com', 'Ankit@45678912')} style={{ background: '#eef2ff', border: '1px solid #c7d2fe', padding: '8px 16px', borderRadius: '10px', color: '#4f46e5', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
               🛡️ Officer Demo Login
             </button>
           </div>
