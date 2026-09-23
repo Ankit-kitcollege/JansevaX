@@ -308,28 +308,67 @@ export default function DepartmentDashboard() {
   }, []);
 
   const checkResolutionLogForTask = async (task) => {
-    if (!task) return;
+    if (!task || !task.id) return;
     setResolutionErrorMsg("");
     setResolutionSuccessMsg("");
-    setExistingResolutionLog(null);
-    setHasSubmittedLog(false);
 
+    const taskStrId = String(task.id);
+
+    // 1. Check local storage resolution logs first
+    try {
+      const localLogs = JSON.parse(localStorage.getItem("civicpulse_resolution_logs") || "[]");
+      const matchedLocalLog = localLogs.find(
+        (log) => String(log.reportId) === taskStrId || String(log.id) === taskStrId
+      );
+      if (matchedLocalLog) {
+        setHasSubmittedLog(true);
+        setExistingResolutionLog(matchedLocalLog);
+        setLoggedReportIds((prev) => new Set(prev).add(taskStrId));
+        return;
+      }
+    } catch (e) {}
+
+    // 2. Check if loggedReportIds set contains this report or report status is already RESOLVED/CLOSED
+    if (loggedReportIds.has(taskStrId) || task.isResolutionLogged || task.status === "RESOLVED" || task.status === "CLOSED" || task.status === "RESOLVED_CLOSED") {
+      setHasSubmittedLog(true);
+      setExistingResolutionLog({
+        id: task.id,
+        reportId: task.id,
+        status: task.status || "RESOLVED",
+        actionNotes: task.notes || "Resolution log successfully recorded for this civic problem.",
+        proofPhoto: task.resolutionPhoto || null,
+        createdAt: task.updatedAt || new Date().toISOString()
+      });
+      return;
+    }
+
+    // 3. Non-blocking fast API check with 800ms timeout
     const numericId = parseNumericReportId(task.id);
     if (numericId && !isNaN(numericId)) {
       try {
-        const res = await reportApi.checkResolutionLogStatus(numericId);
-        if (res.data && res.data.exists) {
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 800));
+        const apiPromise = reportApi.checkResolutionLogStatus(numericId);
+        const res = await Promise.race([apiPromise, timeoutPromise]);
+        if (res && res.data && res.data.exists) {
           setHasSubmittedLog(true);
-          setExistingResolutionLog(res.data.resolutionLog);
-          setLoggedReportIds((prev) => new Set(prev).add(String(task.id)));
-        } else {
-          setHasSubmittedLog(false);
-          setExistingResolutionLog(null);
+          setExistingResolutionLog(res.data.resolutionLog || {
+            id: task.id,
+            reportId: task.id,
+            status: task.status || "RESOLVED",
+            actionNotes: "Resolution log recorded in database.",
+            createdAt: new Date().toISOString()
+          });
+          setLoggedReportIds((prev) => new Set(prev).add(taskStrId));
+          return;
         }
       } catch (err) {
         console.warn("Failed to check resolution log status from backend", err);
       }
     }
+
+    // Default if no resolution log found
+    setHasSubmittedLog(false);
+    setExistingResolutionLog(null);
   };
 
   const handleDeleteReport = async (task) => {
@@ -358,7 +397,16 @@ export default function DepartmentDashboard() {
       const unified = await fetchUnifiedReports();
       setBackendReports(unified);
 
-      // Pre-fetch logged resolution status for all numeric tasks
+      // Pre-fetch logged resolution status from local storage & API
+      try {
+        const localLogs = JSON.parse(localStorage.getItem("civicpulse_resolution_logs") || "[]");
+        localLogs.forEach((l) => {
+          if (l && l.reportId) {
+            setLoggedReportIds((prev) => new Set(prev).add(String(l.reportId)));
+          }
+        });
+      } catch (e) {}
+
       unified.forEach(async (r) => {
         const numId = typeof r.id === "number" ? r.id : parseInt(String(r.id).replace(/\D/g, ""), 10);
         if (numId && !isNaN(numId)) {
