@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Grid2x2, Bell, User } from "lucide-react";
 import { reportApi } from "../api/reportApi";
 import { useAuth } from "../context/AuthContext";
 import { fetchUnifiedReports } from "../utils/reportStorage";
