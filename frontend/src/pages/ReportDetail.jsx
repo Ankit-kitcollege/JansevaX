@@ -376,10 +376,12 @@ export default function ReportDetail() {
               Dashboard
             </Link>
 
-            <div className="notification-icon" onClick={() => navigate("/notifications")} style={{ cursor: "pointer" }}>
-              ♧
-              <span />
-            </div>
+            {user && (user.role === 'DEPARTMENT_OFFICER' || user.role === 'ADMIN') && (
+              <div className="notification-icon" onClick={() => navigate("/notifications")} style={{ cursor: "pointer" }}>
+                ♧
+                <span />
+              </div>
+            )}
 
             <div className="profile-mini" onClick={() => navigate("/profile")} style={{ cursor: "pointer" }}>
               <div className="profile-avatar">{userAvatarInitial}</div>

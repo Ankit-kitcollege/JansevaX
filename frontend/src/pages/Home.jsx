@@ -379,10 +379,12 @@ export default function Home() {
               <span>Analytics</span>
             </ProtectedButton>
 
-            <ProtectedButton destination="/notifications" className="cp-nav-link orange-nav-link">
-              <Bell size={18} />
-              <span>Notifications</span>
-            </ProtectedButton>
+            {user && (user.role === 'DEPARTMENT_OFFICER' || user.role === 'ADMIN') && (
+              <ProtectedButton destination="/notifications" className="cp-nav-link orange-nav-link">
+                <Bell size={18} />
+                <span>Notifications</span>
+              </ProtectedButton>
+            )}
 
           </nav>
 
@@ -395,10 +397,12 @@ export default function Home() {
               <Search size={18} />
             </ProtectedButton>
 
-            <ProtectedButton destination="/notifications" className="cp-icon-btn" title="Notifications">
-              <Bell size={18} />
-              <span className="cp-notification-dot" />
-            </ProtectedButton>
+            {user && (user.role === 'DEPARTMENT_OFFICER' || user.role === 'ADMIN') && (
+              <ProtectedButton destination="/notifications" className="cp-icon-btn" title="Notifications">
+                <Bell size={18} />
+                <span className="cp-notification-dot" />
+              </ProtectedButton>
+            )}
 
             {user ? (
               <Link to="/profile" className="cp-user-profile">
@@ -885,10 +889,12 @@ export default function Home() {
           <Grid2x2 size={20} />
           <span>Dashboard</span>
         </ProtectedButton>
-        <ProtectedButton destination="/notifications" className="cp-mobile-nav-item">
-          <Bell size={20} />
-          <span>Alerts</span>
-        </ProtectedButton>
+        {user && (user.role === 'DEPARTMENT_OFFICER' || user.role === 'ADMIN') && (
+          <ProtectedButton destination="/notifications" className="cp-mobile-nav-item">
+            <Bell size={20} />
+            <span>Alerts</span>
+          </ProtectedButton>
+        )}
       </nav>
 
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
@@ -61,6 +61,12 @@ export default function NotificationsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { notifications, unreadCount, markAllRead, markRead } = useNotifications();
+
+  useEffect(() => {
+    if (user && user.role !== 'DEPARTMENT_OFFICER' && user.role !== 'ADMIN') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");

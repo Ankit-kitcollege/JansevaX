@@ -130,8 +130,8 @@ export default function CreateReport() {
     );
   };
 
-  // File upload to backend API
-  const handleFileChange = async (event) => {
+  // File upload to backend API & local FileReader Base64 fallback
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -147,28 +147,37 @@ export default function CreateReport() {
 
     setImage(file);
 
-    // Upload to Spring Boot endpoint
+    // Read local image file as Data URL (base64) so it works instantly everywhere
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64Data = e.target?.result;
+      if (base64Data) {
+        setImageUrl(base64Data);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Try optional Spring Boot backend upload if available
     const formDataUpload = new FormData();
     formDataUpload.append("file", file);
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formDataUpload,
+    fetch("/api/upload", {
+      method: "POST",
+      body: formDataUpload,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.url) {
+          const fullUrl = data.url.startsWith("http")
+            ? data.url
+            : (import.meta.env.VITE_API_BASE_URL
+                ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') + data.url
+                : data.url);
+          setImageUrl(fullUrl);
+        }
+      })
+      .catch((uploadErr) => {
+        console.warn("Backend upload endpoint offline, using local Base64 image data", uploadErr);
       });
-
-      const data = await res.json();
-      if (data.url) {
-        const fullUrl = data.url.startsWith("http")
-          ? data.url
-          : (import.meta.env.VITE_API_BASE_URL
-              ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') + data.url
-              : data.url);
-        setImageUrl(fullUrl);
-      }
-
-    } catch (uploadErr) {
-      console.error("File upload failed", uploadErr);
-    }
   };
 
   // Submit form
@@ -218,7 +227,10 @@ export default function CreateReport() {
       let createdReport;
       try {
         const res = await reportApi.createReport(payload);
-        createdReport = res.data;
+        createdReport = {
+          ...res.data,
+          imageUrl: res.data?.imageUrl || payload.imageUrl || "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=60"
+        };
       } catch (apiErr) {
         console.warn("Backend API submit failed, generating local fallback report...", apiErr);
         createdReport = {
@@ -428,18 +440,29 @@ export default function CreateReport() {
             <label className="upload-box">
               <input
                 type="file"
-                accept="image/png,image/jpeg,image/jpg"
+                accept="image/*"
                 onChange={handleFileChange}
               />
 
-              <div className="upload-icon">☁️</div>
+              <div className="upload-icon">📷</div>
 
               <strong>
-                {image ? image.name : "Add File / Upload Photo"}
+                {image ? image.name : "Add File / Take Photo"}
               </strong>
 
-              <small>JPG, PNG up to 10MB</small>
+              <small>Click to capture photo or choose image (up to 10MB)</small>
             </label>
+
+            {imageUrl && (
+              <div style={{ marginTop: "12px", textAlign: "center" }}>
+                <img
+                  src={imageUrl}
+                  alt="Attached Report Photo Preview"
+                  style={{ maxHeight: "180px", borderRadius: "10px", border: "2px solid #38bdf8", objectFit: "cover", margin: "0 auto" }}
+                />
+                <p style={{ fontSize: "12px", color: "#38bdf8", marginTop: "6px", fontWeight: "600" }}>✓ Photo Attached Successfully</p>
+              </div>
+            )}
           </div>
 
           {/* Image Link */}

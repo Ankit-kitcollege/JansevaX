@@ -86,11 +86,11 @@ export default function AppRoutes() {
         }
       />
 
-      {/* User Common Protected Routes */}
+      {/* Officers Only Notification & Alert Center */}
       <Route
         path="/notifications"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['ADMIN', 'DEPARTMENT_OFFICER']}>
             <NotificationsPage />
           </ProtectedRoute>
         }

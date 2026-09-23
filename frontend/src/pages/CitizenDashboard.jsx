@@ -110,10 +110,6 @@ export default function CitizenDashboard() {
         </div>
 
         <div className="nav-right">
-          <button className="notification-btn" title="Notifications" onClick={() => navigate("/notifications")}>
-            <Bell size={20} />
-          </button>
-
           <div className="profile" onClick={() => navigate("/profile")} title="Click to View Settings">
             <User size={18} />
             <span>{user?.name || "Ankit Yadav"}</span>
