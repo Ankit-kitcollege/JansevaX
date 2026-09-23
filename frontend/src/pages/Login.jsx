@@ -128,8 +128,15 @@ export default function Login() {
       }
       navigate(targetRoute, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
-      setStep(1);
+      if (err.code === "NOT_REGISTERED" || err.message?.includes("register first")) {
+        setError("⚠️ Account not registered! Citizens must register first before logging in. Redirecting to Registration...");
+        setTimeout(() => {
+          navigate('/register', { state: { prefillEmail: email } });
+        }, 1500);
+      } else {
+        setError(err.response?.data?.message || err.message || 'Invalid email or password. Please try again.');
+        setStep(1);
+      }
     } finally {
       setSubmitting(false);
     }

@@ -34,12 +34,6 @@ const findLocalUser = (email, password) => {
   if (found) {
     return { id: found.id || Date.now(), name: found.name, email: found.email, role: found.role || 'CITIZEN' };
   }
-
-  // Pre-configured citizen fallback
-  if (cleanEmail === 'citizen@jansevax.in' || cleanEmail.includes('citizen')) {
-    return { id: 99, name: 'Verified Citizen', email: email, role: 'CITIZEN' };
-  }
-
   return null;
 };
 
@@ -80,6 +74,13 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
+    const cleanEmail = String(email || '').toLowerCase().trim();
+    const isOfficerOrAdmin =
+      cleanEmail === 'ankityadav100320@gmail.com' ||
+      cleanEmail.includes('officer') ||
+      cleanEmail.includes('dept') ||
+      cleanEmail.includes('admin');
+
     try {
       const res = await authApi.login({ email, password });
       const userData = res.data?.user || res.data;
@@ -91,6 +92,7 @@ export const AuthProvider = ({ children }) => {
       saveLocalUser(userData, password);
       return userData;
     } catch (apiErr) {
+      // 1. Check local registered users store
       const localUser = findLocalUser(email, password);
       if (localUser) {
         const dummyToken = `local-token-${Date.now()}`;
@@ -101,30 +103,28 @@ export const AuthProvider = ({ children }) => {
         return localUser;
       }
       
-      // Fallback for valid email format so registration/login NEVER blocks citizen
-      if (email && password && email.includes('@')) {
-        const role = email.toLowerCase().includes('officer') || email.toLowerCase().includes('dept')
-          ? 'DEPARTMENT_OFFICER'
-          : email.toLowerCase().includes('admin')
-          ? 'ADMIN'
-          : 'CITIZEN';
-
-        const fallbackUser = {
-          id: Date.now(),
-          name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+      // 2. Direct login ONLY for pre-authorized Officers & Administrators
+      if (isOfficerOrAdmin) {
+        const role = cleanEmail.includes('admin') ? 'ADMIN' : 'DEPARTMENT_OFFICER';
+        const officerUser = {
+          id: 101,
+          name: cleanEmail.includes('admin') ? 'System Admin' : 'Ankit Yadav',
           email: email,
           role: role
         };
-
         const dummyToken = `local-token-${Date.now()}`;
         setToken(dummyToken);
-        setUser(fallbackUser);
+        setUser(officerUser);
         localStorage.setItem('civic_token', dummyToken);
-        localStorage.setItem('civic_user', JSON.stringify(fallbackUser));
-        saveLocalUser(fallbackUser, password);
-        return fallbackUser;
+        localStorage.setItem('civic_user', JSON.stringify(officerUser));
+        saveLocalUser(officerUser, password);
+        return officerUser;
       }
-      throw apiErr;
+
+      // 3. Unregistered Citizens MUST register first!
+      const notRegisteredError = new Error("Account not found. Citizens must register first before logging in.");
+      notRegisteredError.code = "NOT_REGISTERED";
+      throw notRegisteredError;
     }
   };
 
