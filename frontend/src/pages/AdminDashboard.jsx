@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../api/adminApi';
 import { reportApi } from '../api/reportApi';
+import { fetchUnifiedReports } from '../utils/reportStorage';
 import StatusBadge from '../components/StatusBadge';
 import PriorityBadge from '../components/PriorityBadge';
 import { Link } from 'react-router-dom';
@@ -20,19 +21,38 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchAdminData = async () => {
+      let unified = [];
       try {
-        const [anRes, repRes, usRes, depRes] = await Promise.all([
+        unified = await fetchUnifiedReports();
+        setReports(unified);
+      } catch (e) {}
+
+      try {
+        const [anRes, usRes, depRes] = await Promise.all([
           adminApi.getAnalytics(),
-          reportApi.getAllReports(),
           adminApi.getUsers(),
           adminApi.getDepartments()
         ]);
         setAnalytics(anRes.data);
-        setReports(repRes.data);
-        setUsers(usRes.data);
-        setDepartments(depRes.data);
+        if (usRes.data) setUsers(usRes.data);
+        if (depRes.data) setDepartments(depRes.data);
       } catch (err) {
-        console.error(err);
+        // Calculate fallback analytics from unified reports if API is offline
+        const byCat = {};
+        const byStat = {};
+        unified.forEach((r) => {
+          const cat = r.category || 'OTHER';
+          const stat = r.status || 'SUBMITTED';
+          byCat[cat] = (byCat[cat] || 0) + 1;
+          byStat[stat] = (byStat[stat] || 0) + 1;
+        });
+        setAnalytics({
+          totalReports: unified.length,
+          activeReports: unified.filter((r) => r.status !== 'RESOLVED' && r.status !== 'CLOSED').length,
+          resolvedReports: unified.filter((r) => r.status === 'RESOLVED' || r.status === 'CLOSED').length,
+          reportsByCategory: byCat,
+          reportsByStatus: byStat,
+        });
       } finally {
         setLoading(false);
       }
