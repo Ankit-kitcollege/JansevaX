@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { KeyRound, ArrowLeft, RefreshCw } from 'lucide-react';
 import './Auth.css';
 
 export default function Register() {
+  const [step, setStep] = useState(1); // 1 = Registration details & Captcha, 2 = OTP Verification
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,25 +14,123 @@ export default function Register() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [captchaState, setCaptchaState] = useState('idle'); // 'idle', 'loading', 'verified'
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  
+
+  // OTP state
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [generatedOtp, setGeneratedOtp] = useState('680542');
+  const [timer, setTimer] = useState(30);
+  const [otpSentMsg, setOtpSentMsg] = useState('');
+
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.prefillEmail) {
+      setFormData((prev) => ({ ...prev, email: location.state.prefillEmail }));
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    let interval;
+    if (step === 2 && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [step, timer]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSendOtp = (e) => {
     e.preventDefault();
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError('Please fill all required registration fields.');
       return;
     }
 
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match. Please re-enter your password.');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (captchaState !== 'verified') {
+      setError('Please check "I\'m not a robot" to continue.');
+      return;
+    }
+
+    setError('');
+    const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(randomOtp);
+    setOtpSentMsg(`Security verification code sent to ${formData.email}`);
+    setOtp(['', '', '', '', '', '']);
+    setStep(2);
+    setTimer(30);
+  };
+
+  const handleOtpChange = (index, value) => {
+    if (isNaN(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+    setError('');
+
+    // Auto focus next input
+    if (value !== '' && index < 5) {
+      const nextInput = document.getElementById(`reg-otp-input-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`reg-otp-input-${index - 1}`);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
+  const fillDemoOtp = () => {
+    if (generatedOtp && generatedOtp.length === 6) {
+      setOtp(generatedOtp.split(''));
+      setError('');
+    }
+  };
+
+  const handleResendOtp = () => {
+    if (timer > 0) return;
+    const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setTimer(30);
+    setGeneratedOtp(randomOtp);
+    setOtpSentMsg(`New OTP code sent to ${formData.email}`);
+    setOtp(['', '', '', '', '', '']);
+    setError('');
+  };
+
+  const handleVerifyAndRegister = async (e) => {
+    e.preventDefault();
+    const enteredOtp = otp.join('');
+    if (enteredOtp.length < 6) {
+      setError('Please enter all 6 digits of the OTP.');
+      return;
+    }
+    if (enteredOtp !== generatedOtp) {
+      setError(`Invalid OTP code. Please enter ${generatedOtp} or click "Auto-Fill OTP".`);
+      return;
+    }
+
+    setError('');
     setSubmitting(true);
     try {
       await register({
@@ -38,6 +138,8 @@ export default function Register() {
         email: formData.email,
         password: formData.password
       });
+
+      // Redirect to login with prefilled email and success message as per user specification
       navigate('/login', {
         state: {
           prefillEmail: formData.email,
@@ -46,141 +148,304 @@ export default function Register() {
         }
       });
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleCaptchaClick = () => {
+    if (captchaState !== 'idle') return;
+    setCaptchaState('loading');
+    setTimeout(() => {
+      setCaptchaState('verified');
+      setError('');
+    }, 800);
+  };
+
   return (
     <div className="auth-container">
-      
       {/* BACKGROUND GLOWING ORBS */}
       <div className="orb orb-1"></div>
       <div className="orb orb-2"></div>
       <div className="orb orb-3"></div>
 
-      {/* Main Content Area: Centered Marketing Text + Glass Card */}
-      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center justify-center gap-8 text-center p-6 mx-auto h-full overflow-y-auto" style={{ maxHeight: '100vh' }}>
-        
-        {/* Branding & Marketing Text Centered Above Form */}
-        <div className="mb-2 mt-6 flex flex-col items-center max-w-3xl shrink-0">
-           <Link to="/" className="flex flex-col items-center group mb-3 hover:opacity-95 transition-opacity" style={{textDecoration: 'none'}}>
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-500 via-purple-600 to-indigo-600 p-[2.5px] flex items-center justify-center shadow-2xl shadow-rose-500/50 group-hover:scale-110 transition-transform mb-3 duration-300">
-              <div className="w-full h-full bg-slate-950 backdrop-blur-md rounded-[21px] flex items-center justify-center">
-                <svg className="w-10 h-10 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      {/* Main Content Area */}
+      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center justify-center gap-8 text-center p-6 mx-auto">
+        {/* Branding Centered Above Form */}
+        <div className="mb-2 mt-4 flex flex-col items-center max-w-3xl">
+          <Link to="/" className="flex flex-col items-center group mb-2 hover:opacity-95 transition-opacity" style={{ textDecoration: 'none' }}>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 via-purple-600 to-indigo-600 p-[2px] flex items-center justify-center shadow-xl shadow-rose-500/50 group-hover:scale-105 transition-transform mb-2 duration-300">
+              <div className="w-full h-full bg-slate-950 backdrop-blur-md rounded-[14px] flex items-center justify-center">
+                <svg className="w-8 h-8 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                 </svg>
               </div>
             </div>
-            <span className="text-slate-900 text-6xl sm:text-7xl font-black tracking-wider font-['Plus_Jakarta_Sans'] uppercase drop-shadow-[0_2px_10px_rgba(225,29,72,0.15)]">
+            <span className="text-slate-900 text-5xl sm:text-6xl font-black tracking-wider font-['Plus_Jakarta_Sans'] uppercase drop-shadow-[0_2px_10px_rgba(225,29,72,0.15)]">
               JansevaX
             </span>
           </Link>
         </div>
 
         {/* MAIN GLASS CONTAINER */}
-        <div className="glass-card mb-8 shrink-0">
-          
-          {/* Header */}
-          <div className="header">
-            <h1>Citizen Registration</h1>
-          </div>
-
-          {error && <div className="error-msg">{error}</div>}
-
-          {/* Register Form */}
-          <form onSubmit={handleSubmit}>
-            
-            {/* Name Field */}
-            <div className="form-group">
-              <label htmlFor="name">Full Name</label>
-              <div className="input-wrapper">
-                <input 
-                  type="text" 
-                  id="name" 
-                  name="name"
-                  required 
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="John Doe" 
-                />
+        <div className="glass-card mb-8">
+          {step === 1 ? (
+            <>
+              {/* Header Step 1 */}
+              <div className="header">
+                <h1>Citizen Registration</h1>
+                <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                  Create Citizen Account to Report & Track Civic Problems
+                </p>
               </div>
-            </div>
 
-            {/* Email Field */}
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <div className="input-wrapper">
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email"
-                  required 
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="name@example.com" 
-                />
-              </div>
-            </div>
+              {error && <div className="error-msg">{error}</div>}
 
-            {/* Password Field */}
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <div className="input-wrapper">
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  id="password" 
-                  name="password"
-                  required 
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••" 
-                />
-                <button 
-                  type="button" 
-                  className="toggle-pwd" 
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? '🙈' : '👁️'}
+              {/* Step 1 Form */}
+              <form onSubmit={handleSendOtp}>
+                {/* Full Name */}
+                <div className="form-group">
+                  <label htmlFor="name">Full Name</label>
+                  <div className="input-wrapper">
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Ankit Yadav"
+                    />
+                  </div>
+                </div>
+
+                {/* Email Address */}
+                <div className="form-group">
+                  <label htmlFor="email">Email Address</label>
+                  <div className="input-wrapper">
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div className="form-group">
+                  <label htmlFor="password">Password</label>
+                  <div className="input-wrapper">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      className="toggle-pwd"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm Password Field */}
+                <div className="form-group">
+                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <div className="input-wrapper">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      className="toggle-pwd"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Captcha */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100/90 border border-slate-200/90 mb-4 mt-2 h-[80px] shadow-sm">
+                  <div className="flex items-center pl-2">
+                    <div
+                      onClick={handleCaptchaClick}
+                      className={`w-8 h-8 mr-3 bg-white rounded flex items-center justify-center cursor-pointer transition-all shadow-sm ${captchaState === 'idle' ? 'border-2 border-slate-300 hover:border-slate-400' : 'border-0'}`}
+                    >
+                      {captchaState === 'loading' && (
+                        <svg className="w-6 h-6 text-blue-600 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      )}
+                      {captchaState === 'verified' && (
+                        <svg className="w-7 h-7 text-green-600 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <label onClick={handleCaptchaClick} className="text-base text-slate-700 font-semibold cursor-pointer select-none">
+                      &nbsp;
+                      {captchaState === 'idle' && "I'm not a robot"}
+                      {captchaState === 'loading' && <span className="text-blue-600">Verifying...</span>}
+                      {captchaState === 'verified' && "I'm not a robot"}
+                    </label>
+                  </div>
+                  <div className="flex flex-col items-center pt-1">
+                    <svg className="w-8 h-8 mb-1" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" fill="#e2e8f0" />
+                      <path d="M15.5 9a3.5 3.5 0 00-7 0v2h-1v5h9v-5h-1V9zm-5 0a2.5 2.5 0 015 0v2h-5V9z" fill="#0f172a" />
+                    </svg>
+                    <span className="text-[9px] text-slate-500 font-bold tracking-widest uppercase">reCAPTCHA</span>
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-submit">
+                  Send OTP Verification Code →
                 </button>
+              </form>
+            </>
+          ) : (
+            <>
+              {/* Step 2: OTP Verification */}
+              <div className="header" style={{ marginBottom: '1.25rem' }}>
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto mb-3 text-rose-400">
+                  <KeyRound size={24} />
+                </div>
+                <h1 style={{ fontSize: '1.5rem' }}>Enter OTP Code</h1>
+                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                  6-digit security code sent to <br />
+                  <strong className="text-rose-400">{formData.email}</strong>
+                </p>
               </div>
-            </div>
 
-            {/* Confirm Password Field */}
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <div className="input-wrapper">
-                <input 
-                  type={showConfirmPassword ? "text" : "password"} 
-                  id="confirmPassword" 
-                  name="confirmPassword"
-                  required 
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="••••••••" 
-                />
-                <button 
-                  type="button" 
-                  className="toggle-pwd" 
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? '🙈' : '👁️'}
+              {otpSentMsg && (
+                <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#4ade80', padding: '8px 12px', borderRadius: '10px', fontSize: '11px', marginBottom: '14px' }}>
+                  ✓ {otpSentMsg}
+                </div>
+              )}
+
+              {/* Demo OTP Banner */}
+              <div
+                onClick={fillDemoOtp}
+                style={{ background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: '12px', padding: '10px 14px', marginBottom: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                title="Click to auto-fill demo OTP"
+              >
+                <div style={{ textAlign: 'left' }}>
+                  <span style={{ fontSize: '10px', color: '#4338ca', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>DEMO SECURITY OTP</span>
+                  <div style={{ fontSize: '16px', fontWeight: '800', color: '#1e1b4b', letterSpacing: '3px' }}>{generatedOtp.split('').join(' ')}</div>
+                </div>
+                <span style={{ fontSize: '11px', background: '#4f46e5', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontWeight: '600' }}>
+                  Auto-Fill OTP
+                </span>
+              </div>
+
+              {error && <div className="error-msg">{error}</div>}
+
+              <form onSubmit={handleVerifyAndRegister}>
+                {/* 6-Digit Input Boxes */}
+                <div className="flex justify-between gap-2 mb-6">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      id={`reg-otp-input-${index}`}
+                      type="text"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      style={{
+                        width: '45px',
+                        height: '52px',
+                        textAlign: 'center',
+                        fontSize: '20px',
+                        fontWeight: '800',
+                        borderRadius: '12px',
+                        background: '#ffffff',
+                        border: digit ? '2px solid #e11d48' : '1px solid #cbd5e1',
+                        color: '#0f172a',
+                        outline: 'none',
+                        boxShadow: digit ? '0 0 12px rgba(225, 29, 72, 0.25)' : 'none'
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between mb-6 px-1">
+                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>
+                    {timer > 0 ? `Resend OTP in ${timer}s` : "Didn't receive code?"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={timer > 0}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: timer > 0 ? '#6b7280' : '#fb7185',
+                      fontWeight: '600',
+                      fontSize: '12px',
+                      cursor: timer > 0 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <RefreshCw size={13} /> Resend OTP
+                  </button>
+                </div>
+
+                <button type="submit" className="btn-submit" disabled={submitting}>
+                  {submitting ? 'Verifying OTP & Creating Account...' : 'Verify OTP & Complete Registration'}
                 </button>
-              </div>
-            </div>
 
-            {/* Button */}
-            <button type="submit" className="btn-submit" disabled={submitting}>
-              {submitting ? 'Creating account...' : 'Sign Up'}
-            </button>
-          </form>
+                <button
+                  type="button"
+                  onClick={() => { setStep(1); setError(''); }}
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#9ca3af',
+                    padding: '10px',
+                    borderRadius: '12px',
+                    marginTop: '12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <ArrowLeft size={15} /> Back to Details
+                </button>
+              </form>
+            </>
+          )}
 
           {/* Login Link */}
           <p className="footer-text">
             Already have an account? <Link to="/login">Sign in</Link>
           </p>
-
         </div>
       </div>
     </div>
