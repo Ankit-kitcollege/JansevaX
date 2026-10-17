@@ -32,8 +32,7 @@ import {
   ShieldCheck,
   Trash2,
 } from "lucide-react";
-import { deleteReportPermanently, getRemovedReportIds, isReportRemoved, fetchUnifiedReports } from "../utils/reportStorage";
-
+import { deleteReportPermanently, getRemovedReportIds, isReportRemoved, fetchUnifiedReports, getReportFallbackImage } from "../utils/reportStorage";
 import "./Department.css";
 
 const navItems = [
@@ -139,6 +138,16 @@ function TaskCard({ task, onDetails, onUpdateStatus, onDeleteReport }) {
 
   return (
     <div className="task-card">
+      {task.imageUrl && (
+        <div style={{ width: "68px", height: "68px", borderRadius: "10px", overflow: "hidden", flexShrink: 0, border: "1px solid #e2e8f0", background: "#f8fafc" }}>
+          <img
+            src={task.imageUrl}
+            alt={task.title}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+        </div>
+      )}
       <div className={`task-icon ${task.iconClass || "road"}`}>
         <Icon size={25} />
       </div>
@@ -473,6 +482,7 @@ export default function DepartmentDashboard() {
         createdAt: r.createdAt,
         icon,
         iconClass,
+        imageUrl: r.imageUrl || getReportFallbackImage(r.category, r.title),
         status: r.status || "SUBMITTED",
         notes: r.notes || null,
         reporterName: r.reporterName || r.reportedBy?.name || r.user?.name || "Citizen User",
@@ -1176,6 +1186,17 @@ export default function DepartmentDashboard() {
                 {selectedTask.description}
               </p>
 
+              {selectedTask.imageUrl && (
+                <div style={{ marginTop: "12px", marginBottom: "16px", borderRadius: "10px", overflow: "hidden", border: "1px solid #e2e8f0", background: "#0f172a", maxHeight: "220px" }}>
+                  <img
+                    src={selectedTask.imageUrl}
+                    alt={selectedTask.title}
+                    style={{ width: "100%", height: "200px", objectFit: "cover", display: "block" }}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                </div>
+              )}
+
               <div className="detail-box">
                 <MapPin size={19} />
                 <div>
@@ -1278,17 +1299,27 @@ export default function DepartmentDashboard() {
                 </div>
 
                 {resolutionTask && (
-                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px', marginBottom: '18px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#6366f1' }}>SELECTED PROBLEM LOCATION</span>
-                      <span className={`priority ${(resolutionTask.priority || "MEDIUM").toLowerCase()}`}>
-                        {resolutionTask.priority || "MEDIUM"} PRIORITY
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px', marginBottom: '18px', display: 'flex', gap: '14px', alignItems: 'center' }}>
+                    {resolutionTask.imageUrl && (
+                      <img
+                        src={resolutionTask.imageUrl}
+                        alt="Problem photo"
+                        style={{ width: '64px', height: '64px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: '1px solid #cbd5e1' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '700', color: '#6366f1' }}>SELECTED PROBLEM LOCATION</span>
+                        <span className={`priority ${(resolutionTask.priority || "MEDIUM").toLowerCase()}`}>
+                          {resolutionTask.priority || "MEDIUM"} PRIORITY
+                        </span>
+                      </div>
+                      <strong style={{ display: 'block', fontSize: '14px', color: '#1e293b', marginBottom: '4px' }}>{resolutionTask.title}</strong>
+                      <span style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={14} /> {resolutionTask.location}
                       </span>
                     </div>
-                    <strong style={{ display: 'block', fontSize: '14px', color: '#1e293b', marginBottom: '4px' }}>{resolutionTask.title}</strong>
-                    <span style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={14} /> {resolutionTask.location}
-                    </span>
                   </div>
                 )}
 

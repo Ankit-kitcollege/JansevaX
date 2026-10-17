@@ -218,8 +218,20 @@ export default function AdminDashboard() {
                 <tr key={r.id} className="hover:bg-slate-800/40 transition-colors">
                   <td className="py-3 px-4 font-mono font-bold text-slate-400">#{r.id}</td>
                   <td className="py-3 px-4">
-                    <span className="block font-bold text-white max-w-xs truncate">{r.title}</span>
-                    <span className="text-[10px] text-sky-400">{r.category}</span>
+                    <div className="flex items-center gap-3">
+                      {r.imageUrl && (
+                        <img
+                          src={r.imageUrl}
+                          alt={r.title}
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-700/80 shrink-0 bg-slate-800"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+                      <div>
+                        <span className="block font-bold text-white max-w-xs truncate">{r.title}</span>
+                        <span className="text-[10px] text-sky-400 font-semibold">{r.category}</span>
+                      </div>
+                    </div>
                   </td>
                   <td className="py-3 px-4">
                     <PriorityBadge score={r.priorityScore} />

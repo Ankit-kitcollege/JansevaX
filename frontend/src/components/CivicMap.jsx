@@ -148,6 +148,7 @@ export default function CivicMap({ reports = [], clusters = [], onSupportReport 
                     src={report.imageUrl}
                     alt={report.title}
                     className="w-full h-32 object-cover rounded-lg border border-slate-700"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
                 )}
 

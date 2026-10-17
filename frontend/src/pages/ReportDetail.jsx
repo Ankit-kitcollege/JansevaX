@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { fetchUnifiedReports } from "../utils/reportStorage";
+import { fetchUnifiedReports, getReportFallbackImage } from "../utils/reportStorage";
 import { useAuth } from "../context/AuthContext";
 import "./ReportDetail.css";
 
@@ -13,13 +13,14 @@ const fallbackReport = {
   status: "IN_PROGRESS",
   priorityScore: 85,
   priorityLabel: "HIGH",
+  category: "POTHOLE",
   description:
     "Large 8-inch deep pothole near the central bus stop. Causing severe vehicle damage and traffic bottleneck during peak hours.",
   reportedBy: "Citizen User",
   department: "Roads & Bridges Department",
   officer: "Municipal Field Officer",
   supportCount: 14,
-  imageUrl: "",
+  imageUrl: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80",
   createdAt: "2026-09-17T12:05:37",
   updatedAt: "2026-09-17T23:38:00",
 };
@@ -207,6 +208,7 @@ export default function ReportDetail() {
       reportId: formattedId,
       id: r.id,
       title: r.title || fallbackReport.title,
+      category: r.category || "POTHOLE",
       location: r.address || r.location || fallbackReport.location,
       locationDetail: r.landmark || fallbackReport.locationDetail,
       status: r.status || fallbackReport.status,
@@ -217,7 +219,7 @@ export default function ReportDetail() {
       department: dept,
       officer: r.officerName || r.assignedOfficer || "Municipal Field Officer",
       supportCount: r.supportCount ?? r.upvoteCount ?? fallbackReport.supportCount,
-      imageUrl: r.imageUrl || "",
+      imageUrl: r.imageUrl || getReportFallbackImage(r.category, r.title),
       createdAt: r.createdAt || fallbackReport.createdAt,
       updatedAt: r.updatedAt || fallbackReport.updatedAt,
       latestMessage: r.notes || (r.history && r.history.length > 0 ? r.history[0].notes : null),
@@ -596,6 +598,7 @@ export default function ReportDetail() {
                               src={item.imageUrl}
                               alt="Update evidence"
                               className="history-evidence"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
                           )}
 
@@ -678,23 +681,15 @@ export default function ReportDetail() {
                 {report.description}
               </p>
 
-              {report.imageUrl ? (
-                <img
-                  src={report.imageUrl}
-                  alt="Civic issue"
-                  className="report-image"
-                />
-              ) : (
-                <div className="image-placeholder">
-                  <div className="image-placeholder-icon">
-                    ▧
-                  </div>
-                  <strong>Issue Image</strong>
-                  <span>
-                    Photo uploaded with this report
-                  </span>
-                </div>
-              )}
+              <img
+                src={report.imageUrl || getReportFallbackImage(report.category, report.title)}
+                alt="Civic issue"
+                className="report-image"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = getReportFallbackImage(report.category, report.title);
+                }}
+              />
 
               <div className="image-caption">
                 <span>

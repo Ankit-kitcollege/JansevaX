@@ -86,6 +86,26 @@ export const deleteReportPermanently = async (reportId, reportTitle = "", report
   window.dispatchEvent(new Event("civicpulse-report-removed"));
 };
 
+export const getReportFallbackImage = (category, title = "") => {
+  const combined = ((category || "") + " " + (title || "")).toUpperCase();
+  if (combined.includes("POTHOLE") || combined.includes("ROAD")) {
+    return "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80";
+  }
+  if (combined.includes("GARBAGE") || combined.includes("WASTE") || combined.includes("DUMP") || combined.includes("SANITATION")) {
+    return "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=800&auto=format&fit=crop&q=80";
+  }
+  if (combined.includes("DRAIN") || combined.includes("WATER") || combined.includes("PIPE") || combined.includes("LEAK")) {
+    return "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=800&auto=format&fit=crop&q=80";
+  }
+  if (combined.includes("STREET") || combined.includes("LIGHT") || combined.includes("DARK") || combined.includes("LAMP")) {
+    return "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=800&auto=format&fit=crop&q=80";
+  }
+  if (combined.includes("TREE") || combined.includes("BRANCH") || combined.includes("FALLEN")) {
+    return "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&auto=format&fit=crop&q=80";
+  }
+  return "https://images.unsplash.com/photo-1584467735815-f778f274e296?w=800&auto=format&fit=crop&q=80";
+};
+
 export const canonicalDefaultReports = [
   {
     id: "RD-2026-05-001",
@@ -101,6 +121,7 @@ export const canonicalDefaultReports = [
     category: "POTHOLE",
     status: "SUBMITTED",
     createdAt: "2026-05-01T10:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80",
   },
   {
     id: "RD-2026-05-002",
@@ -116,6 +137,7 @@ export const canonicalDefaultReports = [
     category: "POTHOLE",
     status: "IN_PROGRESS",
     createdAt: "2026-05-02T11:30:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80",
   },
   {
     id: "RD-2026-05-003",
@@ -131,6 +153,7 @@ export const canonicalDefaultReports = [
     category: "GARBAGE",
     status: "SUBMITTED",
     createdAt: "2026-05-03T09:15:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=800&auto=format&fit=crop&q=80",
   },
   {
     id: "RD-2026-05-004",
@@ -146,6 +169,7 @@ export const canonicalDefaultReports = [
     category: "WATER_LEAKAGE",
     status: "RESOLVED",
     createdAt: "2026-05-04T14:20:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=800&auto=format&fit=crop&q=80",
   },
   {
     id: "RD-2026-05-005",
@@ -161,6 +185,7 @@ export const canonicalDefaultReports = [
     category: "STREETLIGHT",
     status: "IN_PROGRESS",
     createdAt: "2026-05-05T18:45:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=800&auto=format&fit=crop&q=80",
   },
   {
     id: "RD-2026-05-006",
@@ -176,6 +201,7 @@ export const canonicalDefaultReports = [
     category: "FALLEN_TREE",
     status: "SUBMITTED",
     createdAt: "2026-05-06T08:10:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&auto=format&fit=crop&q=80",
   },
   {
     id: "RD-2026-05-007",
@@ -191,6 +217,7 @@ export const canonicalDefaultReports = [
     category: "GARBAGE",
     status: "SUBMITTED",
     createdAt: "2026-05-07T12:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=800&auto=format&fit=crop&q=80",
   },
 ];
 
@@ -246,7 +273,8 @@ export const fetchUnifiedReports = async () => {
   canonicalDefaultReports.forEach((r) => {
     if (r && r.id != null) {
       const coords = resolveReportCoords(r);
-      map.set(String(r.id), { ...r, lat: coords.lat, lng: coords.lng, latitude: coords.lat, longitude: coords.lng });
+      const img = r.imageUrl || getReportFallbackImage(r.category, r.title);
+      map.set(String(r.id), { ...r, imageUrl: img, lat: coords.lat, lng: coords.lng, latitude: coords.lat, longitude: coords.lng });
     }
   });
 
@@ -255,7 +283,8 @@ export const fetchUnifiedReports = async () => {
       const coords = resolveReportCoords(r);
       const key = String(r.id);
       const existing = map.get(key);
-      const merged = existing ? { ...existing, ...r } : r;
+      const img = r.imageUrl || (existing && existing.imageUrl) || getReportFallbackImage(r.category, r.title);
+      const merged = existing ? { ...existing, ...r, imageUrl: img } : { ...r, imageUrl: img };
       map.set(key, { ...merged, lat: coords.lat, lng: coords.lng, latitude: coords.lat, longitude: coords.lng });
     }
   });
@@ -265,7 +294,8 @@ export const fetchUnifiedReports = async () => {
       const coords = resolveReportCoords(r);
       const key = String(r.id);
       const existing = map.get(key);
-      const merged = existing ? { ...existing, ...r } : r;
+      const img = r.imageUrl || (existing && existing.imageUrl) || getReportFallbackImage(r.category, r.title);
+      const merged = existing ? { ...existing, ...r, imageUrl: img } : { ...r, imageUrl: img };
       map.set(key, { ...merged, lat: coords.lat, lng: coords.lng, latitude: coords.lat, longitude: coords.lng });
     }
   });
